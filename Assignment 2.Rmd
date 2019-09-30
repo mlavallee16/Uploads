@@ -1,0 +1,137 @@
+---
+title: "Assignment 2"
+author: "Michael LaVallee"
+date: "9/18/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#### 1. Download the c2015 dataset to your computer. Use function getwd() to check the current working directory. Use setwd() to change the current directory to the c2015 file
+```{r}
+getwd()
+#my directory is already set i do not need to change it
+```
+#### 2.We need to install a package to read the xlsx file. (Let’s not change the xlsx to csv here) There are a few packages for this. I recommend to use the r
+
+```{r}
+library(readxl)
+
+```
+#### 3.Use read_excel() to read the c2015 dataset. Use function class() to check the type of data you just read in. You will notice that the data now is not just a data frame, it is also a tibble. A tibble is a generalization of a data frame
+```{r}
+c2015 = read_excel("C:/Users/student/Documents/Senior Year/Fall Semester/R Analytics/Data Set/c2015.xlsx")
+class(c2015)
+
+
+```
+#### 4.Use dim function to check the dimension of the data. Since this data is quite big, a common practice is to randomly subset the data to analyze
+```{r}
+dim(c2015)
+set.seed(2019)
+sample2015 <- c2015[sample(nrow(c2015),1000),]
+sample2015
+```
+#### 5. Use summary function to have a quick look at the data. You will notice there is one variable is actually a constant. Remove that variable from the data.
+```{r}
+summary(c2015)
+
+```
+#### 6. Check the number of missing values (NA) in each column
+```{r}
+null = is.na(c2015)
+
+colSums(null)
+
+```
+#### 7 There are missing values in this data that are not NAs. Identify the form of these missing values. Check the number of these missing values in each column
+```{r}
+sample2015=replace(sample2015,"unknow",NA)
+sample2015=replace(sample2015,'Not Rep', NA)
+sample2015
+
+```
+#### 8. Change the missing values in SEX variable to “Female”
+```{r}
+sample2015$SEX = replace(sample2015$SEX,NA, "Female")
+sample2015$SEX
+```
+#### 9. Fix the AGE variable so that it is in the right form and has no missing values.
+
+```{r}
+sample2015['AGE'] [sample2015['AGE']== "Less than 1"]<- "0"
+sample2015$AGE=as.numeric(sample2015$AGE)
+sample2015$AGE[is.na(sample2015$AGE)]<- mean (sample2015$AGE,na.rm = TRUE)
+sample2015$AGE
+```
+#### 10. Put the TRAV_SP(Travel Speed) variable in the right form (type) and remove all missing values. Calculate the average speed. You can use a non-base R function for this question. Hint: check out the function str_replace
+```{r}
+sample2015$TRAV_SP <-substr(sample2015$TRAV_SP,1,nchar(sample2015$TRAV_SP)-4)
+sample2015$TRAV_SP <- as.numeric(as.character(sample2015$TRAV_SP))
+
+here <- sample2015[!is.na(sample2015$TRAV_SP),]
+mean(here$TRAV_SP)
+```
+#### 11 Compare the average speed of those who had "No Apprent Injury" and the rest. What do you observe?
+```{r}
+notinjured <- here[here$INJ_SEV == 'No Apparent Injury (O)',]
+injurey <- here[here$INJ_SEV != 'No Apparent Injury (O)',]
+mean(notinjured$TRAV_SP, na.rm = TRUE)
+
+mean(injurey$TRAV_SP,na.rm=TRUE)
+
+# Travel soeed with injury is higher
+```
+#### 12.Use the SEAT_POS variable to filter the data so that there is only drivers in the dataset. Compare the average speed of man drivers and woman drivers. Comment on the results
+```{r}
+driver <- here[here$SEAT_POS =="Front Seat, Left Side",]
+maledriver <- driver[driver$SEX == 'Male',]
+femaledriver <-driver[driver$SEX == 'Female',]
+mean(maledriver$TRAV_SP, na.rm = TRUE)
+
+mean(femaledriver$TRAV_SP, na.rm=TRUE)
+
+#males in accidend driver faster than females
+```
+####Compare the average speed of drivers who drink and those who do not. Comment on the results.Hint: This calculation can be done manually or by using the aggregate function or by function in base R. For example:
+```{r}
+drink<- driver[driver$DRINKING == 'Yes (Alcohol Involved)',]
+notdrunk <- driver[driver$DRINKING == 'No (Alcohol Not Involved)',]
+mean(drink$TRAV_SP, na.rm = TRUE)
+
+mean(notdrunk$TRAV_SP, na.rm = TRUE)
+
+#people who drink drive faster than people who dont
+```
+#### 14 Hypothesize about the age range of drivers who may drive more aggressively. Test your hypothesis by comparing the average speed of those in this age range and the rest. Comment on the results.
+
+```{r}
+# I hypthonesis that people under 25 drive faster than over 25
+
+under <- driver[driver$AGE < 25,]
+over <- driver[driver$AGE >=25,]
+mean(under$TRAV_SP, na.rm = TRUE)
+
+mean (over$TRAV_SP, na.rm = TRUE)
+
+#The results show that poeple under 25 tend to drive faster
+```
+####15 If the data did not confirm your hypothesis in 14. Could you identify an age group of drivers who may drive more aggressively?
+```{r}
+# problem 14 comfirmed my hypothesis so i did not do this step
+```
+
+
+
+
+
+
+
+
+
+
+
+

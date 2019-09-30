@@ -1,0 +1,176 @@
+---
+title: "Assignment 3"
+author: "Michael LaVallee"
+date: "9/23/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+#### 1.Read the titanic data set as a tibble,Redo questions 13 to 23
+```{r}
+library(dplyr)
+titanic = read.csv("C:/Users/student/Documents/Senior Year/Fall Semester/R Analytics/Data Set/titanic.csv")
+```
+###### 13
+```{r}
+titanic %>% filter(Sex=='female')%>% summarise(mean=mean(Age,na.rm =TRUE))
+
+```
+###### 14
+```{r}
+titanic %>% filter(Pclass == '1') %>% summarise(median(Fare,na.rm=TRUE))
+
+```
+###### 15
+```{r}
+
+titanic %>% filter (Pclass != '1')%>% filter(Sex == 'female')%>% summarise(median(Fare, na.rm = TRUE))
+
+```
+###### 16
+```{r}
+
+titanic %>% filter(Pclass != '1' ) %>% filter (Sex == 'female')%>% filter(Survived == '1')%>% summarise(median(Age, na.rm = TRUE))
+```
+###### 17
+```{r}
+titanic %>% filter(Age >= 13)%>% filter(Age<=19)%>% filter(Survived == '1')%>% filter (Sex == 'female')%>% summarise(mean(Fare, na.rm = TRUE))
+```
+###### 18
+```{r}
+titanic %>% filter(Age >= 13)%>% filter(Age<=19)%>% filter(Survived == '1')%>% filter (Sex == 'female')%>% group_by(Pclass)%>% summarise(mean(Fare, na.rm = TRUE))
+
+```
+
+###### 19
+```{r}
+nineteen=titanic %>% filter(Fare > mean(Fare,na.rm = TRUE)) %>% group_by(Survived)%>% summarise(counting=n())%>% mutate(freq=counting/sum(counting))
+                   
+```
+###### 20
+```{r}
+twenty= titanic %>% mutate(sfare=(Fare-mean(Fare,na.rm = TRUE))/sd(Fare,na.rm = TRUE))
+```
+###### 21
+```{r}
+titanic1 =titanic %>% mutate (cfare = cut(Fare,breaks = c(-Inf,mean(Fare,na.rm = TRUE),Inf),label = c("Cheap","Expensive")))
+```
+###### 22
+```{r}
+ages <- c(0,9.99,19.99,29.99,39.99,49.99,59.99,69.99,79.99,89.99)
+
+label<-c(0,1,2,3,4,5,6,7,8)
+titanic2=titanic1%>% mutate(cage=cut(Age,breaks = ages,labels = label))
+
+
+```
+###### 23
+
+```{r}
+frequen = titanic2%>%mutate(Embarked=replace(Embarked,Embarked=='',"S"))%>% group_by(Embarked)%>% summarize(freq = n())
+```
+
+
+
+#### 2.Using Dplyr and in Assignment 2, redo 4 using sample_n function, redo 5 using glimpse, redo 11, 12,and 13. For 11, 12 and 13, you may want to use the combo group_by and summarise
+```{r}
+library(readxl)
+c2015 = read_excel("C:/Users/student/Documents/Senior Year/Fall Semester/R Analytics/Data Set/c2015.xlsx")
+library(dplyr)
+dim(c2015)
+set.seed(2019)
+sample2015 = sample_n(c2015, 1000)
+sample2015$TRAV_SP <-substr(sample2015$TRAV_SP,1,nchar(sample2015$TRAV_SP)-4)
+sample2015$TRAV_SP <- as.numeric(as.character(sample2015$TRAV_SP))
+```
+###### 11
+```{r}
+no=sample2015 %>% filter(INJ_SEV == 'No Apparent Injury (O)') %>% summarise(mean (TRAV_SP, na.rm = TRUE))
+
+injury=sample2015 %>% filter(INJ_SEV != 'No Apparent Injury (O)') %>% summarise(mean (TRAV_SP, na.rm = TRUE))
+
+```
+###### 12
+```{r}
+driver=sample2015 %>% filter(SEAT_POS == "Front Seat, Left Side") %>% group_by(SEX)%>% summarise(mean(TRAV_SP,na.rm = TRUE))
+```
+###### 13
+```{r}
+yes=sample2015 %>% filter(DRINKING == 'Yes (Alcohol Involved)')%>%  summarise(mean(TRAV_SP, na.rm = TRUE))
+no=sample2015 %>% filter(DRINKING == 'No (Alcohol Not Involved)')%>%  summarise(mean(TRAV_SP, na.rm = TRUE))
+
+```
+
+
+#### 3. Calculate the travel speed (TRAV_SP variable) by day. Compare the travel speed of the first 5 days and the last 5 days of months.
+```{r}
+first5=sample2015%>% filter (DAY >= 1)%>% filter(DAY <= 5)%>% summarise(mean(TRAV_SP, na.rm = TRUE))
+last5=sample2015%>% filter (DAY >= 25)%>% filter(DAY <= 30)%>% summarise(mean(TRAV_SP, na.rm = TRUE))
+
+```
+#### 4.  Calculate the travel speed (TRAV_SP variable) by day of the week. Compare the travel speed of the weekdays and weekends
+```{r}
+days = sample2015 %>% group_by(DAY_WEEK) %>% summarise(mean = mean(TRAV_SP, na.rm = TRUE))
+
+mean(days[3:4,]$mean)
+mean(days[-3:-4,]$mean)
+```
+#### 5 Find the top 5 states with greatest travel speed
+```{r}
+states = sample2015 %>% group_by(STATE)%>% summarise(mean=mean(TRAV_SP,na.rm = TRUE))%>% arrange(desc(mean))
+
+states[1:5,]
+
+```
+#### Rank travel speed by month
+```{r}
+month = sample2015 %>% group_by(MONTH)%>% summarise(mean=mean(TRAV_SP,na.rm = TRUE))%>% arrange(desc(mean))
+month
+```
+#### 7. Find the average speed of teenagers in December.
+```{r}
+teen = sample2015%>% filter(AGE>12, AGE <20)%>%  filter (MONTH == 'December')%>% summarise(mean(TRAV_SP,na.rm = TRUE))
+teen
+```
+#### 8 Find the month that female drivers drive fastest on average
+```{r}
+fast = sample2015 %>% filter(SEX == 'Female',SEAT_POS == 'Front Seat, Left Side')%>% group_by(MONTH)%>% summarise(mean=mean(TRAV_SP, na.rm = TRUE)) %>% arrange(desc(mean))
+
+fast[1,]
+```
+#### 9. Find the month that male driver drive slowest on average.
+```{r}
+fast = sample2015 %>% filter(SEX == 'Male',SEAT_POS == 'Front Seat, Left Side')%>% group_by(MONTH)%>% summarise(mean=mean(TRAV_SP, na.rm = TRUE)) %>% arrange((mean))
+
+fast[1,]
+```
+#### 10 Create a new column containing information about the season of the accidents. Compare the percentage of Fatal Injury by seasons.
+```{r}
+sample2015 <- sample2015%>% mutate(seasons = recode(MONTH,'December' = 'Winter', 'January'='Winter', 'February' = 'Winter', 'March' = 'Spring', 'April' = 'Spring' , 'May' = 'Spring', 'June' = 'Summer', 'July' = 'Summer', 'August' = 'Summer', 'September' = 'Autumn', 'October' = 'Autumn', 'November'='Autumn' ))
+
+Fatal <- sample2015 %>% group_by(seasons)%>% summarise(percent= sum(INJ_SEV == 'Fatal Injury (K)')/n())
+
+Fatal
+
+```
+#### 11  Compare the percentage of fatal injuries for different type of deformations (DEFORMED variable)
+```{r}
+deformed <- sample2015 %>% group_by(DEFORMED)%>% summarise(percent= sum(INJ_SEV == 'Fatal Injury (K)')/n())
+
+deformed
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

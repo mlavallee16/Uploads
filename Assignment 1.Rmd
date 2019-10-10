@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 title: "Assignment 1"
 author: "Michael LaVallee"
@@ -257,3 +258,264 @@ table(d$Embarked)
 
 
 
+=======
+---
+title: "Assignment 1"
+author: "Michael LaVallee"
+date: "9/18/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#### 1. Calculate the folowing sum
+```{r}
+s1 = c(1:2019)
+sum(s1)
+```
+
+```{r}
+s2 = c(1:2019)
+sum(s2^3)
+```
+
+```{r}
+s3<-c(1:2019)
+sum(s3^s3)
+```
+
+```{r}
+s4 = c(1:2019)
+y = c(1,-1)
+sum((s4*y)^s4)
+```
+```{r}
+s5 = c(1:2019)
+sum(1/(s5^2))
+
+```
+```{r}
+s6 = c(1:2019)
+sum(1/(s6))
+```
+```{r}
+s7 = c(1:2019)
+sum(1/(s7^3))
+```
+```{r}
+s8 = c(1:2019)
+y = c(1,-1)
+sum(1/(s8*y))
+```
+#### 2. Generate random variable
+###### a.
+```{r}
+a = rnorm(1000,mean=10,sd=1)
+mean(a)
+sd(a)
+```
+###### b.
+```{r}
+b = rnorm(1000,mean=10,sd=1)
+a = b > 10
+sum(a)
+```
+###### c.
+```{r}
+c = rnorm(1000,mean=10,sd=1)
+hist(c)
+
+```
+###### d.
+```{r}
+d = rnorm(1000,mean=2,sd=1)
+x = (d >1)
+sum(x/1000)
+
+```
+#### 3. Consider an experiment of tossing a fair dice
+```{r}
+x = c(1:6)
+y=sample(x,1000,replace=TRUE)
+mean(y)
+sd(y)
+z=y>5
+sum(z)
+table(y)
+prop.table(table(y))
+plot(prop.table(table(y)))
+```
+#### 4. Consider an experiment of tossing a dice 3 times. 
+```{r}
+x = c(1:6)
+y = matrix(sample(x,3000,replace=TRUE),nrow = 1000)
+sum(y[,1]>y[,2]+y[,3])/1000
+sum(y[,1]^2>y[,2]^2+y[,3]^2)/1000
+```
+#### 5. Using simulation, estimate the probability of getting three tails in a row when tossing a coin 3 times
+```{r}
+x = c(0,1)
+y = matrix(sample(x,3000,replace = TRUE) , nrow = 1000)
+sum(y[,1]+y[,2]+y[,3]==0)/1000
+
+```
+#### 6.Using simulation, estimate the probability of getting three tails in a row when tossing a coin 10 times
+```{r}
+x = c(0,1)
+y = matrix(sample(x,30,replace = TRUE) , nrow = 10)
+sum(y[,1]+y[,2]+y[,3]==0)/1000
+```
+#### 7 Central Limit Theorem
+```{r}
+x=runif(100000,0,1)
+y=matrix(data=x,nrow = 100)
+z=rowsum(y,c(1:100))
+hist(z)
+
+
+```
+#### 7 titanic data
+```{r}
+
+d = read.csv("C:/Users/student/Documents/Senior Year/Fall Semester/R Analytics/Data Set/titanic.csv")
+```
+#### 8 Use knitr::kable function to nicely print out the first 10 rows of the data in markdown
+
+```{r}
+
+knitr::kable(d)
+d[1:10,]
+```
+#### 9 Use is.na function and sum function to count the total number of missing values in the data.
+```{r}
+a=is.na(d)
+sum(a)
+colSums(a)
+
+```
+#### 10 Calculate the average Age of the passengers. You may want to use the parameter na.rm = TRUE in the function mean
+
+```{r}
+x <- c (d[,6])
+mean(x,na.rm =TRUE)
+```
+#### 11 Replace the missing values of age by the average age calculated previously
+```{r}
+d[is.na(d)] <- 29.7
+
+```
+#### 12 Remove columns Name, PassengerID, Ticket, and Cabin.
+```{r}
+d$PassengerId = NULL
+d$Name = NULL
+d$Ticket = NULL
+d$Cabin = NULL
+```
+#### 13 . Calculate the mean age of female passengers
+```{r}
+mean(d[d$Sex=='female',]$Age)
+
+```
+#### 14 Calculate the median fare of the passengers in Class 1
+```{r}
+median(d[d$Pclass == "1",]$Fare)
+```
+#### 15 Calculate the median fare of the female passengers that are not in Class 1
+```{r}
+median(d[d[d$Pclass != "1",]$Sex == "female",] $Fare)
+```
+#### 16. Calculate the median age of survived passengers who are female and Class 1 or Class 2,
+```{r}
+median(d[d[d[d$Pclass!="3",]$Sex == "female",]$Survived == "1",]$Age, na.rm = TRUE)
+```
+#### 17. Calculate the mean fare of female teenagers survived passengers
+```{r}
+mean(d[(d$Survived == "1") & (d$Age >=13)& (d$Age <=19) & (d$Sex == "female"),]$Fare)
+
+```
+#### 18. Calculate the mean fare of female teenagers survived passengers for each class
+```{r}
+one = mean(d[d[(d$Survived == "1") & (d$Age >=13)& (d$Age <=19) & (d$Sex == "female"),]$Pclass == "1",]$Fare)
+one
+two = mean(d[d[(d$Survived == "1") & (d$Age >=13)& (d$Age <=19) & (d$Sex == "female"),]$Pclass == "2",]$Fare)
+two
+three = mean(d[d[(d$Survived == "1") & (d$Age >=13)& (d$Age <=19) & (d$Sex == "female"),]$Pclass == "3",]$Fare)
+three
+```
+#### 19. Calculate the ratio of Survived and not Survived for passengers who are who pays more than the average fare
+```{r}
+avgFare=mean(d$Fare)
+survived=sum(d[d$Survived == "1",]$Fare > avgFare)
+notsurvived = sum(d[d$Survived == "0",]$Fare > avgFare)
+
+survived/notsurvived
+```
+#### 20. Add column that standardizes the fare (subtract the mean and divide by standard deviation) and name it sfare
+```{r}
+FARE_mean=mean(d$Fare)
+sd_mean=sd(d$Fare)
+Standard_Fare=(d$Fare-FARE_mean)/sd_mean
+cbind(d,Standard_Fare)
+
+```
+#### 21 Add categorical variable named cfare that takes value cheap for passengers paying less the average fare and takes value expensive for passengers paying more than the average fare.
+```{r}
+Fare_Mean = mean(d$Fare)
+value = d$Fare > Fare_Mean
+
+value [value == "TRUE"] <- "Expensive" 
+value [value == "FALSE"] <- "Cheap"
+
+cbind(d,value)
+
+```
+#### 22 Add categorical variable named cage that takes value 0 for age 0-10, 1 for age 10-20, 2 for age 20-30,and so on
+```{r}
+cage = d$Age
+cage[d$Age >=0] <- "0"
+cage[d$Age >10] <- "1"
+cage[d$Age >20] <- "2"
+cage[d$Age >30] <- "3"
+cage[d$Age >40] <- "4"
+cage[d$Age >50] <- "5"
+cage[d$Age >60] <- "6"
+cage[d$Age >70] <- "7"
+cage[d$Age >80] <- "8"
+
+
+cbind(d,cage)
+
+
+```
+#### 23.  Show the frequency of Ports of Embarkation. It appears that there are two missing values in the Embarked variable. Assign the most frequent port to the missing ports. Hint: Use the levels function to modify the categories of categorical variables.
+```{r}
+table(d$Embarked)
+levels(d$Embarked)= c("S","C","Q","S")
+table(d$Embarked)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+>>>>>>> 049fab9dbaa96dc8dcbe8ba1d492bd62d0f8ea4c

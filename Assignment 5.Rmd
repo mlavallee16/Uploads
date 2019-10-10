@@ -1,0 +1,214 @@
+---
+title: "Assignment 5"
+author: "Michael LaVallee"
+date: "9/30/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#### 1 clean dataset
+```{r}
+library(tidyverse)
+library(readxl)
+c2015 = read_excel("C:/Users/student/Documents/Senior Year/Fall Semester/R Analytics/Data Set/c2015.xlsx")
+
+```
+
+```{r}
+c2015 = c2015%>% mutate(TRAV_SP=sapply(strsplit(TRAV_SP,split = " ",fixed=TRUE),function(x)(x[1])),TRAV_SP=as.numeric(TRAV_SP))
+c2015 = c2015 %>% filter_all(~! is.na(.))
+c2015 = c2015 %>% filter_all(~!(.=='Unknown'))
+c2015 = c2015 %>% filter_all(~!(.=='Unkno'))
+c2015 = c2015 %>% filter_all(~!(.=='Not Rep'))
+c2015 = c2015 %>% filter_all(~!(.=='Unknown (Police Reported)'))
+c2015 = c2015 %>% filter_all(~!(.==str_detect(.,'Not Rep')))
+c2015 = c2015 %>%filter_all(~!(.==str_detect(.,'Unknown ')))
+c2015 = c2015 %>% filter_all(~!(.=='Not Reported'))
+c2015 = c2015 %>% filter(SEAT_POS == 'Front Seat, Left Side')
+
+c2015 = c2015%>% mutate(AGE = replace(AGE, AGE=='Less than 1', '0'),AGE=as.numeric(AGE))
+
+```
+#### 2 Use geom_point to plot AGE and TRAV_SP coloring by SEX
+
+```{r}
+ggplot(c2015, aes(AGE,TRAV_SP,color=SEX))+
+geom_point()
+
+```
+#### 3 There is overplotting in 2. Overplotting is when many points are duplicated on the graph. Use geom_jitter instead of geom_point for 2. to avoid overplotting.
+```{r}
+ggplot(c2015, aes(AGE,TRAV_SP,color=SEX))+
+geom_jitter()
+```
+
+#### 4 Plot histograms of AGE, TRAV_SP with bins = 50.
+```{r}
+ggplot(c2015, aes(AGE))+
+geom_histogram(bins=50)
+
+```
+#### 4b
+```{r}
+ggplot(c2015, aes(TRAV_SP))+
+geom_histogram(bins=50)
+```
+
+
+#### 5 Plot a histogram of AGE coloring (fill) by SEX.
+```{r}
+ggplot(c2015,aes(x=AGE, fill=SEX) )+
+  geom_histogram()
+```
+
+
+#### 6 Using geom_density to plot estimated densities of AGE colored by SEX.
+```{r}
+ggplot(c2015,aes(AGE,color = SEX),)+
+       geom_density()
+```
+
+
+#### 7 Plot estimated densities of TRAV_SP colored by INJ_SEV.
+```{r}
+ggplot(c2015,aes(TRAV_SP,color = INJ_SEV),)+
+       geom_density()
+```
+
+#### 8 Plot estimated densities of TRAV_SP seperated (colored) by weekdays and weekends.
+```{r}
+c2015 <- c2015%>% mutate(Weektime = recode(DAY_WEEK,'Monday' = 'Weekday', 'Tuesday'='Weekday', 'Wednesday' = 'Weekday', 'Thursday' = 'Weekday', 'Friday' = 'Weekday', 'Saturday' = "Weekend", 'Sunday' = 'Weekend' ))
+
+ggplot(c2015,aes(TRAV_SP,color=Weektime))+
+  geom_density()
+
+```
+
+
+#### 9 Implement geom_bar on MONTH. Implement geom_bar on MONTH filled by SEX
+```{r}
+ggplot(c2015,aes(MONTH, fill=SEX))+
+geom_bar()
+```
+
+
+#### 10 Implement geom_bar on MONTH and SEX with position='dodge'
+```{r}
+ggplot(c2015,aes(MONTH,fill = SEX))+
+  geom_bar(position = 'dodge')
+```
+
+
+#### 11Plot a bar chart of average speeds in months using geom_col
+```{r}
+monthdata = c2015%>% group_by(MONTH)%>% mutate(AVG_SP_PER = mean(TRAV_SP)/n())
+ggplot(monthdata,aes(MONTH))+
+  geom_col(aes(y=AVG_SP_PER))
+```
+
+
+#### 12 Plot a bar chart of average speeds in months using geom_bar
+```{r}
+ggplot(monthdata,aes(x=MONTH ))+
+geom_bar(aes(y=AVG_SP_PER),stat='identity')
+```
+
+
+#### 13Plot a bar chart of average speeds in months filled by SEX
+```{r}
+ggplot(monthdata,aes(MONTH, fill=SEX ))+
+geom_col(aes(y=AVG_SP_PER))
+```
+#### 14Plot a bar chart of average speeds in months colored by INJ_SEV
+```{r}
+ggplot(monthdata,aes(MONTH,fill=INJ_SEV))+
+geom_col(aes(y=AVG_SP_PER))
+```
+####15Refer to this link to have a similar following plot: Horizontal axis is for (monthly) average speed The vertical axis is for months Color by two colors: one for above overall average speed and the other for below the avarage speedThe speed on the horizontal axis is standardized
+```{r}
+#standarized speed
+#create mean speed column, might need that in early problem
+#add column for average speed 
+# Data Prep
+Summary = c2015%>% group_by(MONTH)%>% summarise(mean=mean(TRAV_SP))%>% arrange(mean)
+Summary$Trav_SP_z = round((Summary$mean-mean(Summary$mean))/sd(Summary$mean),2)
+Summary$TRAV_SP_type = ifelse(Summary$Trav_SP_z<0,'below','above')
+Summary$MONTH = factor(Summary$MONTH,levels = Summary$MONTH)
+
+
+# Diverging Barcharts
+ggplot(Summary, aes(x=MONTH, y=Trav_SP_z, label = Trav_SP_z)) +   geom_bar(stat='identity', aes(fill=TRAV_SP_type), width=.5)  +
+  scale_fill_manual(name="Travel Speed", 
+                    labels = c("Above Average", "Below Average"), 
+                    values = c("above"="#00ba38", "below"="#f8766d")) + 
+  labs(subtitle="Normalised mileage from 'c2015'", 
+       title= "Diverging Bars") + 
+  coord_flip()
+```
+
+#### 16 Refer to this link to have a similar following plot: Horizontal Axis is for mean speed Vertical Axis is for INJ_SEV Color by SEX The numbers of speed are shown in points.
+```{r}
+injury = c2015%>% group_by(INJ_SEV,SEX)%>% summarise(mean=mean(TRAV_SP))%>%ungroup()
+injury$mean_sp=round(injury$mean,1)
+
+ggplot(injury,aes(x=INJ_SEV,y=mean_sp, label =mean_sp))+ geom_point(stat = 'identity',aes(col=SEX),size=7, alpha=0.7)+
+ scale_color_manual(name="Travel speed", 
+                     labels = c("Male", "Female"), 
+                     values = c("Male"="#00ba38", "Female"="#f8766d")) + 
+  geom_text(color="white", size=2) +
+  labs(title=" Dot Plot", 
+       subtitle="Mean Travel Speed from'c2015': Dotplot") + 
+  ylim(39, 88) +
+  coord_flip()
+```
+
+
+#### 17Refer to this link to have a similar following plot: Horizontal Axis is for speed Vertical Axis is for DAY Color by SEX The should be a invisible vertical line seperating the two sexes.
+```{r}
+library(ggthemes)
+days = c2015%>% group_by(DAY,SEX)%>% summarise(mean=mean(TRAV_SP))%>% arrange(mean)%>%ungroup()
+days$MEAN_SP = round(days$mean,2)
+days$MEAN_SP[days$SEX=='Male']=-days$MEAN_SP
+
+
+# X Axis Breaks and Labels 
+brks <- seq(-50, 50, 10)
+lbls = paste0(as.character(c(seq(50, 0, -10), seq(10, 50, 10))), "mph")
+
+# Plot
+ggplot(days, aes(x = reorder(DAY,-MEAN_SP), y = MEAN_SP, fill = SEX)) +   # Fill column
+                              geom_bar(stat = "identity", width = .6) +   # draw the bars
+                              scale_y_continuous(breaks = brks,   # Breaks
+                                                 labels = lbls) + # Labels
+                              coord_flip() +  # Flip axes
+                              labs(title="Mean Travel SPeed by day and gender") +
+                              theme_tufte() +  # Tufte theme from ggfortify
+                              theme(plot.title = element_text(hjust = .5), 
+                                    axis.ticks = element_blank(),
+                                    axis.text = element_text(size = 7)) +   # Centre plot title
+                              scale_fill_brewer(palette = "Dark2") +
+  xlab('Day NUmber')+
+  ylab('MEAN_SP(in mph)')
+```
+
+#### 18-20. Generate three other interesting graphs from the dataset.
+```{r}
+ggplot(c2015,aes(TRAV_SP,color = WEATHER),)+
+       geom_density()
+```
+```{r}
+ggplot(c2015,aes(x=TRAV_SP, fill=SEX) )+
+  geom_histogram()
+```
+```{r}
+ggplot(c2015,aes(x=AGE,y=(TRAV_SP), color=WEATHER))+
+geom_bar(stat='identity')
+```
+
+
+
+
+
+

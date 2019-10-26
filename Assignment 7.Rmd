@@ -1,0 +1,320 @@
+---
+output: # rmarkdown::github_document
+  pdf_document: default
+  word_document: default
+  html_document:
+title: "Assignment 7.  Writing Functions"
+---
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=12, fig.height=8, fig.path='Figs/',
+                      warning=FALSE, message=FALSE)
+```
+
+
+__***Submission Instruction***__.  You will need to submit on **Blackboard**, in the **Assignment** section, a link to your assignment on your Github Webpage.  Following [this](https://guides.github.com/features/pages/) to create a github webpage and posted a link to your assignment. 
+
+
+## Questions
+
+
+1. 	Write a function: input a number x and return $x^2+3x+1$
+```{r}
+one = function(x){
+  x^2+3*x+1
+}
+one(2)
+```
+
+
+2. Not using loops, write a function: input a vector and return the product of all the entries in the vector. 
+
+```{r}
+two = function(x){
+  prod(x)
+}
+two(c(7,2,3))
+```
+
+
+3. Using loops, write a function: input a vector and return the product of all the entries in the vector.  
+```{r}
+three = function(x){
+  for(i in 1:length(x)){
+    product <- prod(x)
+    return(product)
+  }
+}
+
+three(c(7,2,3))
+```
+
+
+**User defined functions combining with `apply` function.**  The `apply` function returns a vector or array or list of values obtained by applying a function to margins of an array or matrix. For example, to calculate the column means of a matrix, one can use the `apply` function as follows. 
+
+```{r}
+x = matrix(c(1:9), nrow=3)
+x
+apply(x, MARGIN=2, mean)
+
+```
+
+Using `MARGIN=1` will calculate the row means. 
+
+```{r}
+apply(x, MARGIN=1, sd)
+```
+
+In the above examples, we use the `mean` function to apply to columns.  There are some other similar bultin functions that works with `apply` such as `sum`, `median`, `sd` (for standard deviation). We can also use user-defined functions instead of these builtin functions.  For examle, if one wants to take the sum of the `sine` columns wise, one can do as follows. 
+
+```{r}
+f = function(w)
+{
+  return(sum(sin(w)))
+}
+
+apply(x, MARGIN = 2, f)
+
+```
+In the above codes, function $f$ is applied to each columns of $x$. This codes can be shorten using **anonymous functions**, i.e. functions with nonames, as
+
+```{r}
+apply(x, 2, function(w){sum(sin(w))})
+```
+In the above code, we write a function directly with the `apply` function this function does not need a name, also called **anonymous functions**. 
+
+
+4. Use the above approach to write to caculate or plot 
+
+- (a) the rows sum squares of matrix $x$ above. 
+- (b) the row sums of positive entries in $y$, where $y$ is a 100x100 matrix with the entries following standard normal distribution. 
+- (c) the row sums square of entries in $y$, where $y$ is a 100x100 matrix with the entries following standard normal distribution. What is the distribution of these sum squares? 
+- (d) the historgrams for each rows in $z$, where $z$ is a 3x1000 matrix with the entries following standard normal distribution.
+```{r}
+#a
+apply(x, MARGIN=1, function(w)sum(w)^2 )
+
+```
+
+```{r}
+#b
+y = matrix(rnorm(1000), nrow = 100)
+
+
+apply(y,MARGIN = 1, function(g)sum(g[g>0]))
+
+
+```
+```{r}
+#c
+apply(y, MARGIN=1, function(w)sum(w)^2)
+```
+```{r}
+#d
+z = matrix(rnorm(3000), nrow = 3)
+apply(z,MARGIN = 1, hist)
+
+```
+
+
+
+5.	Write a function: 
+
+- input a vector $v$ and a value $n$ 
+- out the original vector with its missing data in $v$ being replaced by $n$. 
+
+$v$ could be a numeric or characrer vector and $n$ could be a number or a string. If there is no missing value, return $v$ and the message `There is no missing value.`
+```{r}
+five = function(v,n){
+  if(anyNA(v)){
+    for (i in 1:length(v)) {
+      if(is.na(v[i])){
+        v[i]=n
+      }
+      else{
+        v[i]=v[i]
+      }
+    }
+    return(v)
+      }
+  else{
+    print("There is no missing value")
+    return(v)
+  }
+}
+                    
+five(c('two',3,'four',NA),"five")                         
+```
+
+
+6.	Write a function: 
+- input a numeric vector
+- output the original vector with its missing data being replaced by the mean of the vector.  If there is no missing value, return the original vector with the message `There is no missing value.`
+```{r}
+six = function(v){
+  if(anyNA(v)){
+    for (i in 1:length(v)) {
+      if(is.na(v[i])){
+        v[i]=mean(v,na.rm = TRUE)
+      }
+      else{
+        v[i]=v[i]
+      }
+    }
+    return(v)
+      }
+  else{
+    print("There is no missing value")
+    return(v)
+  }
+}
+                    
+six(c(1,2,3,NA,5)) 
+
+```
+
+
+7.	Write a function: 
+- input a character/factor vector 
+- output a vector with its missing data being replaced by the mode of the vector.  If there is no missing value, return the original vector with the message `There is no missing value.`
+```{r}
+Mode = function(x){
+    ta = table(x)
+    tam = max(ta)
+    if (all(ta == tam))
+         mod = NA
+    else
+         if(is.numeric(x))
+    mod = as.numeric(names(ta)[ta == tam])
+    else
+         mod = names(ta)[ta == tam]
+    return(mod)
+}
+seven = function(v){
+  if(anyNA(v)){
+    for (i in 1:length(v)) {
+      if(is.na(v[i])){
+        v[i]=Mode(v)
+      }
+      else{
+        v[i]=v[i]
+      }
+    }
+    return(v)
+      }
+  else{
+    print("There is no missing value")
+    return(v)
+  }
+}
+                    
+seven(c(1,2,2,NA,4,5))  
+
+```
+
+
+8.	Write a function: 
+- input a data frame 
+- output the data frame with numeric missing values being replaced by the corresponding column mean and categorical missing values being replaced by the corresponding column mode. 
+
+Check to confirm that the function woks with the `titanic` dataset. 
+```{r}
+library(tidyverse)
+titanic = read_csv("C:/Users/student/Documents/Senior Year/Fall Semester/R Analytics/Data Set/titanic.csv")
+titanic$Pclass = as.character(titanic$Pclass)
+titanic$Survived = as.character(titanic$Survived)
+
+
+
+eight=function(x)
+{
+  if(is.numeric(x)){x=six(x)}
+  if(is.character(x)){x=seven(x)}
+  return(x)
+}
+
+clean = function(d)
+{
+  for(i in 1:ncol(d)){
+    d[[i]]=eight(d[[i]])
+  }
+  return(d)
+}
+
+clean(titanic)
+
+```
+
+
+
+9.	Write a function that 
+- input two categorical variables 
+- output the a bar chart of one variable color filled by the other variable. 
+
+Check your function with two categorical variables in the titanic data
+```{r}
+nine= function(x,y){
+  df=data.frame(x,y)
+    d=ggplot(df,aes(x,fill=y))+
+    geom_bar()
+  return(d)
+}
+
+nine(titanic$Pclass,titanic$Embarked)
+```
+
+
+10. Write a function that 
+- input an data frame 
+- output all the possible bar charts of a categorical variable filled by another categorical variables where both of the two variables must have the number of categories less than 4.  
+
+Check your function on the titanic data
+```{r}
+
+ten = function(d){
+  df1 = d[,sapply(d,function(col)length(unique((col))))<=4]
+  for(i in 1:(ncol(df1))){
+    for( j in 1: ncol(df1)){
+      print(names(df1)[c(i,j)])
+      print(ggplot(df1, aes(x=df1[[i]],fill=df1[[j]]))+geom_bar(position = 'dodge')+labs(x=names(df1)[[i]],fill=names(df1)[[j]]))
+    }
+  }
+}
+
+ten(titanic)
+```
+
+
+11. Write a function for a quick visualization that input a (cleaned) data and a number $k$ and output the follows
+
+- If $k=1$,  output all the possible bar charts of a categorical variable filled by another categorical variables where both of the two variables must have the number of categories less than 4. 
+- If $k=2$, output all the possible density curve (using `geom_density`), i.e. density curves of all numeric variables
+- If $k=3$, all possible density curves of all numeric variables coloring by a categorical variable with the number of categories less than 4. 
+```{r}
+eleven = function(d,w){
+  if(w==1){
+    ten(d)
+  }
+  if (w==2){
+    df1 = d[, sapply(d,function(col)is.numeric(col))]
+    for(i in 1:ncol(df1)){
+      print(names(df1)[i])
+      print(ggplot(df1, aes(x=df1[[1]]))+geom_density()+labs(x=names(df1)[[i]]))
+    }
+    
+  }
+  if (w==3){
+    df1 = d[, sapply(d,function(col)is.numeric(col))]
+  df2 = d[,sapply(d, function(col) length(unique(col))) <=4]
+  for(i in 1:ncol(df1)){
+    for(j in 1:ncol(df2)){
+    print(ggplot(data = df1, aes(x=df1[[i]]))+ geom_density(data = df2, aes(col = df2[[j]]))+labs(x=names(df1)[[i]],col=names(df2)[[j]]))  
+    }
+  }
+      
+  }  
+}
+eleven(titanic,2)
+```
+
+

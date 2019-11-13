@@ -1,0 +1,144 @@
+---
+title: "Assignment 8"
+author: "Michael LaVallee"
+date: "10/28/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+1.Working with the Titanic dataset. Use the map function to compute the number of NA for each columns. Use map_int to turn the output to an interger vector.
+```{r}
+library(tidyverse)
+library(purrr)
+titanic = read_csv("C:/Users/student/Documents/Senior Year/Fall Semester/R Analytics/Data Set/titanic.csv")
+
+```
+
+```{r}
+c = map(titanic,~sum(is.na(.)))
+ d=map_int (titanic,~sum(is.na(.)))
+
+c
+d
+```
+
+
+2.Use map function to calculate the mean of numeric variables in the Titanic dataset.
+
+```{r}
+two=(titanic %>% select_if(is.numeric)%>%map(., ~mean(.,na.rm = TRUE)))
+two
+
+```
+
+
+3.Use map function to show the means, medians, and standard deviations of numeric variables in the Titanic dataset. Use map_df to show the result in a data frame format.
+```{r}
+three=(titanic %>% select_if(is.numeric)%>%map(., ~list(                                               mean(.,na.rm = TRUE),
+median(.,na.rm=TRUE),
+sd(.,na.rm = TRUE)
+  )))
+
+threeA=(titanic %>% 
+  select_if(is.numeric) %>% map_df( ~list(    
+  mean=mean(.x,na.rm = TRUE),
+  median=median(.x,na.rm=TRUE),
+  sd=sd(.x,na.rm = TRUE)
+  )))
+
+threeA
+
+```
+
+4.Use map function to show the mode (most frequent category) and the number of categories for each categorical variables. Put the result in data frame.
+```{r}
+Mode = function(x){
+    ta = table(x)
+    tam = max(ta)
+    if (all(ta == tam))
+         mod = NA
+    else
+         if(is.numeric(x))
+    mod = as.numeric(names(ta)[ta == tam])
+    else
+         mod = names(ta)[ta == tam]
+    return(mod)
+}
+four = (titanic %>%
+select_if(is.character)%>%map(.,~list( 
+    Mode(.),
+    length (unique(.))
+  )))
+
+fourA = (titanic %>%
+select_if(is.character)%>%map_df(~list( 
+    most=Mode(.x)[1],
+    Category =length (unique(.x))
+  )))
+fourA
+
+```
+
+5.Use map to graph the histograms of numeric variables and bar charts of categorical variables in the Titanic data
+```{r}
+fiveA=(titanic %>% select_if(is.numeric) %>% map(.,~hist(.)))
+
+fiveB=(titanic %>% select_if(is.character) %>% map(.,~barplot(table(.))))
+```
+
+
+
+6.Redo Question 11 in Assignment using map. Hint: You may want to use a nested map. For instance this following codes print out all the possibility of x+y where both x and y are running from 1 to 2.
+```{r}
+
+six = function(d,k){
+  if(k==1){
+    df1 = d[,sapply(d,function(col)length(unique(col)))<= 4]
+    map(1:ncol(df1),function(i){map(1:ncol(df1),function(j){print(names(df1)[c(i,j)])
+      print(ggplot(df1,aes(x=df1[[i]],fill = df1[[j]]))+geom_bar(position = 'dodge')+labs(x=names(df1)[[i]],fill=names(df1)[[j]]))})})
+  }
+  if(k==2){
+    df1 = d[,sapply(d,function(col)is.numeric(col))]     
+    map(1:ncol(df1),function(i){print(names(df1)[i])
+    print(ggplot(df1,aes(x=df1[[i]]))+geom_density()+labs(x=names(df1)[[i]]))})
+  }
+  if(k==3){
+    df1 = d[,sapply(d,function(col)is.numeric(col))]  
+    df2 = d[,sapply(d,function(col)length(unique(col))) <= 4]
+    map (1:ncol(df1),function(i){map(1:ncol(df2),function(j){print(ggplot(data = df1,aes(x=df1[[i]]))+geom_density(data = df2,aes(col=df2[[j]]))+labs(x=names(df1)[[i]],col=names(df2)[[j]]))})})
+  }
+}
+
+six(titanic,3)
+```
+
+7.The function lm computes a linear model. For instance, to do run linear model on the output (y variable) Fare of the input Age (x variable) in the titanic data frame, d, we use
+```{r}
+
+seven <- function(d){
+  d1 = d%>% select_if(is.numeric)
+  d2 = data.frame()
+    for(i in 1:ncol(d1)) {
+     for(j in 1:ncol(d1)){
+      d3 = map_df(d1,~list(
+        x1 = names(d1)[i],
+        x2 = names(d1)[j],
+        r = round(summary(lm(d1[[j]]~d1[[i]],d1))$r.square , digits = 5)
+      ))
+        d3=d3[1,]
+        d2=rbind(d2,d3)
+    }
+  }
+  return(d2)
+}
+
+seven(titanic)
+
+```
+
+

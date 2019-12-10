@@ -12,3 +12,7 @@ Uploading Assignments
 [Assignment_9](Assignment-9.html)
 
 [Assignment_10](Assignment10.html)
+
+[Midterm_Out_Put](midterm.html)
+
+[Midterm_Presentation](test.html)
